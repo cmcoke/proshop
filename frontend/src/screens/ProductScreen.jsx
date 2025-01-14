@@ -1,14 +1,31 @@
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Row, Col, Image, ListGroup, Card, Button } from 'react-bootstrap';
 import Rating from '../components/Rating';
-import products from '../products';
+
 
 const ProductScreen = () => {
 
-  const { id: productId } = useParams(); // Destructure the id parameter from the URL and rename it to productId for clarity. 
-  const product = products.find((p) => p._id === productId); // Find the product with the matching ID from the URL.
-  // console.log(product);
+  // product is the state variable and setProduct is the function that updates the state variable product with the new value.
+  const [product, setProduct] = useState({});
+
+  // Destructure the id parameter from the URL and rename it to productId for clarity. 
+  const { id: productId } = useParams();
+
+  // Fetch the product with the given productId from the backend and update the product state variable with the fetched product.
+  useEffect(() => {
+
+    // Define an async function to fetch the product with the given productId from the backend.
+    const fetchProduct = async () => {
+      const { data } = await axios.get(`/api/products/${productId}`); // Send a GET request to the backend to fetch the product with the given productId.
+      setProduct(data); // Update the product state variable with the fetched product. 
+    };
+
+    fetchProduct(); // Call the fetchProduct function. 
+
+  }, [productId]); // The useEffect hook will re-run the callback function whenever the productId changes.
 
   return (
     <>
