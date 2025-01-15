@@ -1,33 +1,40 @@
-import express from 'express';
-import dotenv from 'dotenv';
-dotenv.config(); // Load the dotenv module and call the config method to read the .env file and make the environment variables available
-import products from './data/products.js'; // Import the products data from the products.js file in the data folder
+/**
+ * This is the main entry point for the Express.js application.
+ * It sets up the server, connects to the database, and defines routes for the API.
+ * 
+ * Features:
+ * - Loads environment variables using `dotenv`.
+ * - Connects to the MongoDB database.
+ * - Defines a root route and a route for handling product-related requests.
+ * - Starts the server on a specified port.
+ */
 
+import express from 'express'; // Import Express.js to create the server.
+import dotenv from 'dotenv'; // Import dotenv to manage environment variables.
+dotenv.config(); // Load environment variables from a `.env` file.
+import connectDB from './config/db.js'; // Import the database connection utility.
+import productRoutes from './routes/productRoutes.js'; // Import product-related routes.
+import { notFound, errorHandler } from './middleware/errorMiddleware.js'; // Import error handling middleware.
 
-const port = process.env.PORT || 5000; // Set the port number to the value of the PORT environment variable or 5000 if it's not set
+const port = process.env.PORT || 5000; // Define the port for the server, defaulting to 5000 if not set in the `.env` file.
 
-const app = express(); // Create an express app instance and store it in a variable called app
+connectDB(); // Connect to the MongoDB database.
 
-// Listen on the port number and log a message to the console to indicate that the server is running
+const app = express(); // Initialize the Express application.
+
+// Root route to confirm the API is running.
 app.get('/', (req, res) => {
-  res.send('API is running...');
+  res.send('API is running...'); // Sends a basic response for the root URL.
 });
 
-// Create a route to get all products and send the products data as a JSON response to the client when the route is hit
-app.get('/api/products', (req, res) => {
-  res.json(products);
-});
+// Route for handling product-related requests.
+// Any requests to `/api/products` are forwarded to the `productRoutes` router.
+app.use('/api/products', productRoutes);
 
-// Create a route to get a single product by id and send the product data as a JSON response to the client when the route is hit
-app.get('/api/products/:id', (req, res) => {
+app.use(notFound); // Middleware to handle requests to non-existent routes. Responds with a 404 status code.
+app.use(errorHandler); // Middleware to handle errors in the application. Responds with a 500 status code.
 
-  // Using the products data array, find the product that matches the id in the request parameters and store it in a variable called product 
-  const product = products.find((p) => p._id === req.params.id);
-  res.json(product);
-});
-
-
-// Start the server on the specified port number and log a message to the console to indicate that the server is running on that port number 
+// Start the server and listen on the defined port.
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`); // Log a confirmation message.
 });
