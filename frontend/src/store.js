@@ -10,12 +10,14 @@
 
 import { configureStore } from '@reduxjs/toolkit'; // Importing the Redux Toolkit configureStore function.
 import { apiSlice } from './slices/apiSlice'; // Importing the API slice for handling API-related state and actions.
+import cartSliceReducer from './slices/cartSlice';
 
 // Create and configure the Redux store.
 export const store = configureStore({
   // Define the reducers for the store.
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer, // Add the API slice reducer under its specific path.
+    cart: cartSliceReducer
   },
   // Configure middleware for the store.
   middleware: (getDefaultMiddleware) =>
