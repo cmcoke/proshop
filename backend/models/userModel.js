@@ -7,6 +7,7 @@
 
 // Imports the `mongoose` library for working with MongoDB.
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 // Defines the schema for the `User` model.
 const userSchema = mongoose.Schema(
@@ -39,6 +40,19 @@ const userSchema = mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    next();
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+});
 
 // Creates the `User` model based on the `userSchema`.
 const User = mongoose.model('User', userSchema);
