@@ -15,6 +15,8 @@ import App from './App.jsx';
 import HomeScreen from './screens/HomeScreen';
 import ProductScreen from './screens/ProductScreen';
 import CartScreen from './screens/CartScreen';
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
 
 // The router configuration is created using the `createBrowserRouter` function.
 const router = createBrowserRouter(
@@ -27,6 +29,8 @@ const router = createBrowserRouter(
       <Route index={true} path='/' element={<HomeScreen />} /> {/* creates a route that renders the `HomeScreen` component when the URL matches `/`  */}
       <Route path='/product/:id' element={<ProductScreen />} /> {/* creates a route that renders the `ProductScreen` component when the URL matches `/product/:id`. */}
       <Route path='/cart' element={<CartScreen />} /> {/* creates a route that renders the `CartScreen` component when the URL matches `/cart`. */}
+      <Route path='/login' element={<LoginScreen />} /> {/* creates a route that renders the `LoginScreen` component when the URL matches `/login`. */}
+      <Route path='/register' element={<RegisterScreen />} />; {/* creates a route that renders the `RegisterScreen` component when the URL matches `/register`. */}
     </Route>
 
   )

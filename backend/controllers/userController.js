@@ -1,3 +1,16 @@
+/**
+ * User Controller:
+ * This module handles user-related functionality such as authentication, registration,
+ * profile management, and user data retrieval.
+ * 
+ * Key Features:
+ * - Authenticates users and generates JWT tokens.
+ * - Registers new users, ensuring no duplicates.
+ * - Allows users to log out by clearing cookies.
+ * - Retrieves and updates user profile information.
+ * - Provides admin access to manage users (get, update, delete).
+ */
+
 import asyncHandler from '../middleware/asyncHandler.js';
 import User from '../models/userModel.js';
 import generateToken from '../utils/generateToken.js';
@@ -6,16 +19,12 @@ import generateToken from '../utils/generateToken.js';
 // @route   POST /api/users/login
 // @access  Public
 const authUser = asyncHandler(async (req, res) => {
-  // console.log(req.body);
-
   const { email, password } = req.body;
 
   const user = await User.findOne({ email });
 
   if (user && (await user.matchPassword(password))) {
-
     generateToken(res, user._id);
-
     res.status(200).json({
       _id: user._id,
       name: user.name,
@@ -32,7 +41,6 @@ const authUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-
   const { name, email, password } = req.body;
 
   const userExists = await User.findOne({ email });
@@ -49,9 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-
     generateToken(res, user._id);
-
     res.status(201).json({
       _id: user._id,
       name: user.name,
