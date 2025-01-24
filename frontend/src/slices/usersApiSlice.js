@@ -53,8 +53,17 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         method: 'POST',
       }),
     }),
+    // Define the `profile` endpoint for updating user profile.
+    profile: builder.mutation({
+      // Specify the API request details for the `profile` mutation.
+      query: (data) => ({
+        url: `${USERS_URL}/profile`, // Set the endpoint URL for updating user profile. 
+        method: 'PUT', // Use the PUT method to update the user profile.
+        body: data, // Pass the updated profile data as the request body.
+      }),
+    }),
   }),
 });
 
 // Export hooks for the defined mutations, making them accessible in React components.
-export const { useLoginMutation, useLogoutMutation, useRegisterMutation } = usersApiSlice;
+export const { useLoginMutation, useLogoutMutation, useRegisterMutation, useProfileMutation } = usersApiSlice;

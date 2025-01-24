@@ -6,6 +6,7 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { Provider } from 'react-redux';
 import store from './store';
 // import 'bootstrap/dist/css/bootstrap.min.css'
@@ -17,6 +18,12 @@ import ProductScreen from './screens/ProductScreen';
 import CartScreen from './screens/CartScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
+import ShippingScreen from './screens/ShippingScreen';
+import PrivateRoute from './components/PrivateRoute';
+import PaymentScreen from './screens/PaymentScreen';
+import PlaceOrderScreen from './screens/PlaceOrderScreen';
+import OrderScreen from './screens/OrderScreen';
+import ProfileScreen from './screens/ProfileScreen.jsx';
 
 // The router configuration is created using the `createBrowserRouter` function.
 const router = createBrowserRouter(
@@ -31,6 +38,16 @@ const router = createBrowserRouter(
       <Route path='/cart' element={<CartScreen />} /> {/* creates a route that renders the `CartScreen` component when the URL matches `/cart`. */}
       <Route path='/login' element={<LoginScreen />} /> {/* creates a route that renders the `LoginScreen` component when the URL matches `/login`. */}
       <Route path='/register' element={<RegisterScreen />} />; {/* creates a route that renders the `RegisterScreen` component when the URL matches `/register`. */}
+
+      {/* The `PrivateRoute` component is used to protect the following routes, allowing access only to authenticated users. */}
+      <Route path='' element={<PrivateRoute />}>
+        <Route path='/shipping' element={<ShippingScreen />} />
+        <Route path='/payment' element={<PaymentScreen />} />
+        <Route path='/placeorder' element={<PlaceOrderScreen />} />
+        <Route path='/order/:id' element={<OrderScreen />} />
+        <Route path='/profile' element={<ProfileScreen />} />
+      </Route>;
+
     </Route>
 
   )
@@ -39,7 +56,9 @@ const router = createBrowserRouter(
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}> {/* The `Provider` component provides the Redux store to the rest of the application. */}
-      <RouterProvider router={router} /> {/* The `RouterProvider` component provides the router configuration to the rest of the application. */}
+      <PayPalScriptProvider deferLoading={true}> {/* The `PayPalScriptProvider` component provides the PayPal SDK script to the rest of the application. */}
+        <RouterProvider router={router} /> {/* The `RouterProvider` component provides the router configuration to the rest of the application. */}
+      </PayPalScriptProvider>
     </Provider>
-  </StrictMode>,
+  </StrictMode>
 );

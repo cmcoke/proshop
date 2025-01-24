@@ -18,7 +18,7 @@ import { updateCart } from '../utils/cartUtils';
 // Retrieve cart data from `localStorage` if available, otherwise initialize an empty cart state.
 const initialState = localStorage.getItem('cart')
   ? JSON.parse(localStorage.getItem('cart')) // Parse stored cart data if it exists.
-  : { cartItems: [] }; // Default to an empty `cartItems` array if no data is stored.
+  : { cartItems: [], shippingAddress: {}, paymentMethod: 'PayPal' }; // Default to an empty `cartItems` array if no data is stored.
 
 // Define the `cartSlice` using Redux Toolkit's `createSlice` function.
 const cartSlice = createSlice({
@@ -60,11 +60,23 @@ const cartSlice = createSlice({
       // Call the `updateCart` utility to save the updated cart and recalculate totals.
       return updateCart(state);
     },
+    saveShippingAddress: (state, action) => {
+      state.shippingAddress = action.payload;
+      localStorage.setItem('cart', JSON.stringify(state));
+    },
+    savePaymentMethod: (state, action) => {
+      state.paymentMethod = action.payload;
+      localStorage.setItem('cart', JSON.stringify(state));
+    },
+    clearCartItems: (state, action) => {
+      state.cartItems = [];
+      localStorage.setItem('cart', JSON.stringify(state));
+    },
   },
 });
 
 // Export the `addToCart` and `removeFromCart` actions for use in components.
-export const { addToCart, removeFromCart } = cartSlice.actions;
+export const { addToCart, removeFromCart, saveShippingAddress, savePaymentMethod, clearCartItems } = cartSlice.actions;
 
 // Export the slice reducer to integrate into the Redux store.
 export default cartSlice.reducer;
