@@ -1,21 +1,28 @@
-/**
- * Redux Toolkit Query (RTK Query) API Configuration:
- * This module sets up a reusable API slice for managing data fetching, caching, and synchronization 
- * with a backend API using RTK Query.
- */
+import { fetchBaseQuery, createApi } from '@reduxjs/toolkit/query/react';
+import { BASE_URL } from '../constants';
 
-import { fetchBaseQuery, createApi } from '@reduxjs/toolkit/query/react'; // RTK Query utilities for creating an API slice.
-import { BASE_URL } from '../constants'; // Import the base URL for API requests from a centralized constants file.
+import { logout } from './authSlice'; // Import the logout action
 
-// Base query configuration:
-// Configures the base URL for all API requests made using this API slice.
-const baseQuery = fetchBaseQuery({ baseUrl: BASE_URL });
+// NOTE: code here has changed to handle when our JWT and Cookie expire.
+// We need to customize the baseQuery to be able to intercept any 401 responses
+// and log the user out
+// https://redux-toolkit.js.org/rtk-query/usage/customizing-queries#customizing-queries-with-basequery
 
-// Create an API slice:
-// `createApi` is the core function of RTK Query used to define an API service.
-// It simplifies data fetching, caching, and state management for API calls.
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+});
+
+async function baseQueryWithAuth(args, api, extra) {
+  const result = await baseQuery(args, api, extra);
+  // Dispatch the logout action on 401.
+  if (result.error && result.error.status === 401) {
+    api.dispatch(logout());
+  }
+  return result;
+}
+
 export const apiSlice = createApi({
-  baseQuery, // Uses the predefined base query with the base URL.
-  tagTypes: ['Product', 'Order', 'User'], // Defines "tags" for cache invalidation and refetching logic.
-  endpoints: (builder) => ({}), // Placeholder for defining API endpoints (to be expanded as needed).
+  baseQuery: baseQueryWithAuth, // Use the customized baseQuery
+  tagTypes: ['Product', 'Order', 'User'],
+  endpoints: (builder) => ({}),
 });

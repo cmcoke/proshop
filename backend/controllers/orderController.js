@@ -118,7 +118,23 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  res.send('update order to delivered'); // Placeholder response
+
+  // Find the order by ID
+  const order = await Order.findById(req.params.id);
+
+  // Check if the order exists and update the delivery status and date if found 
+  if (order) {
+    order.isDelivered = true; // Mark the order as delivered 
+    order.deliveredAt = Date.now(); // Store the current timestamp as the delivery date 
+
+    const updatedOrder = await order.save(); // Save the updated order 
+
+    res.json(updatedOrder); // Respond with the updated order 
+  } else {
+    res.status(404); // Set response status to 404 (Not Found) 
+    throw new Error('Order not found'); // Throw an error if order is not found 
+  }
+
 });
 
 /**
@@ -127,7 +143,8 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
  * @access  Private/Admin
  */
 const getOrders = asyncHandler(async (req, res) => {
-  res.send('get all orders'); // Placeholder response
+  const orders = await Order.find({}).populate('user', 'id name'); // Fetch all orders and populate user details (id and name) for each order item in the list of orders 
+  res.json(orders); // Respond with the list of orders in JSON format 
 });
 
 // Export all order-related functions for use in the routes

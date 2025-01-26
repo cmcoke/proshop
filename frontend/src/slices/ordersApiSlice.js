@@ -73,8 +73,22 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       }),
       keepUnusedDataFor: 5, // Cache the data for 5 seconds
     }),
+    // Define a query endpoint for fetching all orders 
+    getOrders: builder.query({
+      query: () => ({
+        url: ORDERS_URL, // The API URL for fetching all orders 
+      }),
+      keepUnusedDataFor: 5, // Cache the data for 5 seconds 
+    }),
+    // Define a mutation endpoint for updating the order status to 'delivered' 
+    deliverOrder: builder.mutation({
+      query: (orderId) => ({
+        url: `${ORDERS_URL}/${orderId}/deliver`, // The API URL for updating the order status 
+        method: 'PUT', // HTTP method to update the order status 
+      }),
+    })
   }),
 });
 
 // Export the hook to use the createOrder mutation in React components
-export const { useCreateOrderMutation, useGetOrderDetailsQuery, usePayOrderMutation, useGetPaypalClientIdQuery, useGetMyOrdersQuery } = ordersApiSlice;
+export const { useCreateOrderMutation, useGetOrderDetailsQuery, usePayOrderMutation, useGetPaypalClientIdQuery, useGetMyOrdersQuery, useGetOrdersQuery, useDeliverOrderMutation } = ordersApiSlice;

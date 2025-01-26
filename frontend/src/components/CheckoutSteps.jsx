@@ -10,7 +10,7 @@
  * @param {boolean} step4 - Determines if the 'Place Order' step is enabled
  */
 
-import React from 'react';
+
 import { Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 

@@ -22,3 +22,5 @@ export const ORDERS_URL = '/api/orders'; // Path for order-related operations (e
 
 // Endpoint for PayPal configuration.
 export const PAYPAL_URL = '/api/config/paypal'; // Path to fetch PayPal client ID for payment integration.
+
+export const UPLOAD_URL = '/api/upload';

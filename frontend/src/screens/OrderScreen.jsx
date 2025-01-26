@@ -18,6 +18,7 @@ import {
   useGetOrderDetailsQuery, // API hook to fetch order details
   usePayOrderMutation, // API hook to process payment
   useGetPaypalClientIdQuery, // API hook to fetch PayPal client ID
+  useDeliverOrderMutation, // API hook to update order status
 } from '../slices/ordersApiSlice';
 
 const OrderScreen = () => {
@@ -33,6 +34,9 @@ const OrderScreen = () => {
 
   // Mutation hook to process order payment
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  // Mutation hook to update order status to 'delivered' after payment completion by admin user 
+  const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
 
   // Access PayPal script reducer to manage script loading state
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
@@ -86,11 +90,11 @@ const OrderScreen = () => {
   }
 
   // Test payment function for manual order completion
-  async function onApproveTest() {
-    await payOrder({ orderId, details: { payer: {} } }); // Simulate payment
-    refetch();
-    toast.success('Order is paid');
-  }
+  // async function onApproveTest() {
+  //   await payOrder({ orderId, details: { payer: {} } }); // Simulate payment
+  //   refetch();
+  //   toast.success('Order is paid');
+  // }
 
   // Create PayPal order before processing payment
   function createOrder(data, actions) {
@@ -106,6 +110,19 @@ const OrderScreen = () => {
         return orderID; // Return order ID for PayPal transaction
       });
   }
+
+  // Handle order delivery by admin user 
+  const deliverHandler = async () => {
+
+    try {
+      await deliverOrder(orderId); // Update order status to 'delivered'
+      refetch(); // Refresh order details
+      toast.success('Order is delivered'); // Show success message  
+    } catch (err) {
+      toast.error(err?.data?.message || err.message); // Show error message if delivery fails
+    }
+
+  };
 
   return isLoading ? (
     <Loader /> // Show loading spinner if order data is loading
@@ -187,6 +204,30 @@ const OrderScreen = () => {
               <ListGroup.Item>
                 <h2>Order Summary</h2>
               </ListGroup.Item>
+              <ListGroup.Item>
+                <Row>
+                  <Col>Items</Col>
+                  <Col>${order.itemsPrice}</Col>
+                </Row>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <Row>
+                  <Col>Shipping</Col>
+                  <Col>${order.shippingPrice}</Col>
+                </Row>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <Row>
+                  <Col>Tax</Col>
+                  <Col>${order.taxPrice}</Col>
+                </Row>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <Row>
+                  <Col>Total</Col>
+                  <Col>${order.totalPrice}</Col>
+                </Row>
+              </ListGroup.Item>
               {/* PayPal Payment Section */}
               {!order.isPaid && (
                 <ListGroup.Item>
@@ -196,6 +237,17 @@ const OrderScreen = () => {
                   )}
                 </ListGroup.Item>
               )}
+
+              {loadingDeliver && <Loader />}
+              {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
+                <ListGroup.Item>
+                  <Button type='button' className='btn btn-block' onClick={deliverHandler}>
+                    Mark As Delivered
+                  </Button>
+                </ListGroup.Item>
+              )
+              }
+
             </ListGroup>
           </Card>
         </Col>
