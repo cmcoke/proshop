@@ -7,6 +7,7 @@ import {
   RouterProvider,
 } from 'react-router-dom';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import { HelmetProvider } from 'react-helmet-async';
 import { Provider } from 'react-redux';
 import store from './store';
 // import 'bootstrap/dist/css/bootstrap.min.css'
@@ -31,6 +32,7 @@ import ProductEditScreen from './screens/admin/ProductEditScreen.jsx';
 import UserListScreen from './screens/admin/UserListScreen.jsx';
 import UserEditScreen from './screens/admin/UserEditScreen.jsx';
 
+
 // The router configuration is created using the `createBrowserRouter` function.
 const router = createBrowserRouter(
 
@@ -40,6 +42,9 @@ const router = createBrowserRouter(
     // Route path='/' element={<App />} creates a route that renders the `App` component when the URL matches `/`.
     <Route path='/' element={<App />}>
       <Route index={true} path='/' element={<HomeScreen />} /> {/* creates a route that renders the `HomeScreen` component when the URL matches `/`  */}
+      <Route path="/search/:keyword" element={<HomeScreen />} />
+      <Route path="/search/:keyword/page/:pageNumber" element={<HomeScreen />} />
+      <Route path='/page/:pageNumber' element={<HomeScreen />} />
       <Route path='/product/:id' element={<ProductScreen />} /> {/* creates a route that renders the `ProductScreen` component when the URL matches `/product/:id`. */}
       <Route path='/cart' element={<CartScreen />} /> {/* creates a route that renders the `CartScreen` component when the URL matches `/cart`. */}
       <Route path='/login' element={<LoginScreen />} /> {/* creates a route that renders the `LoginScreen` component when the URL matches `/login`. */}
@@ -58,6 +63,7 @@ const router = createBrowserRouter(
       <Route path='' element={<AdminRoute />}>
         <Route path='/admin/orderlist' element={<OrderListScreen />} />
         <Route path='/admin/productlist' element={<ProductListScreen />} />
+        <Route path='/admin/productlist/:pageNumber' element={<ProductListScreen />} />
         <Route path='/admin/product/:id/edit' element={<ProductEditScreen />} />
         <Route path='/admin/userlist' element={<UserListScreen />} />
         <Route path='/admin/user/:id/edit' element={<UserEditScreen />} />
@@ -70,10 +76,12 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Provider store={store}> {/* The `Provider` component provides the Redux store to the rest of the application. */}
-      <PayPalScriptProvider deferLoading={true}> {/* The `PayPalScriptProvider` component provides the PayPal SDK script to the rest of the application. */}
-        <RouterProvider router={router} /> {/* The `RouterProvider` component provides the router configuration to the rest of the application. */}
-      </PayPalScriptProvider>
-    </Provider>
+    <HelmetProvider>
+      <Provider store={store}> {/* The `Provider` component provides the Redux store to the rest of the application. */}
+        <PayPalScriptProvider deferLoading={true}> {/* The `PayPalScriptProvider` component provides the PayPal SDK script to the rest of the application. */}
+          <RouterProvider router={router} /> {/* The `RouterProvider` component provides the router configuration to the rest of the application. */}
+        </PayPalScriptProvider>
+      </Provider>
+    </HelmetProvider>
   </StrictMode>
 );

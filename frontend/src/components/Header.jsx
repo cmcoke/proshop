@@ -14,6 +14,7 @@ import logo from '../assets/logo.png'; // Logo image import
 import { useSelector, useDispatch } from 'react-redux'; // Redux hooks for managing state
 import { useLogoutMutation } from '../slices/usersApiSlice'; // RTK Query hook for logout API call
 import { logout } from '../slices/authSlice'; // Redux action to clear user info on logout
+import SearchBox from './SearchBox';
 
 // Header component
 const Header = () => {
@@ -55,6 +56,7 @@ const Header = () => {
           {/* Navbar collapse section with navigation links */}
           <Navbar.Collapse id='basic-navbar-nav'>
             <Nav className='ms-auto'>
+              <SearchBox />
               {/* Cart link with cart icon and quantity badge */}
               <Nav.Link as={Link} to='/cart'>
                 <FaShoppingCart /> Cart
