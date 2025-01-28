@@ -25,14 +25,38 @@ const ProductEditScreen = () => {
   const {
     data: product,
     isLoading,
+    refetch,
     error,
   } = useGetProductDetailsQuery(productId);
 
-  const [updateProduct, { isLoading: loadingUpdate }] = useUpdateProductMutation();
+  const [updateProduct, { isLoading: loadingUpdate }] =
+    useUpdateProductMutation();
 
-  const [uploadProductImage, { isLoading: loadingUpload }] = useUploadProductImageMutation();
+  const [uploadProductImage, { isLoading: loadingUpload }] =
+    useUploadProductImageMutation();
 
   const navigate = useNavigate();
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      await updateProduct({
+        productId,
+        name,
+        price,
+        image,
+        brand,
+        category,
+        description,
+        countInStock,
+      }).unwrap(); // NOTE: here we need to unwrap the Promise to catch any rejection in our catch block
+      toast.success('Product updated');
+      refetch();
+      navigate('/admin/productlist');
+    } catch (err) {
+      toast.error(err?.data?.message || err.error);
+    }
+  };
 
   useEffect(() => {
     if (product) {
@@ -45,32 +69,6 @@ const ProductEditScreen = () => {
       setDescription(product.description);
     }
   }, [product]);
-
-  const submitHandler = async (e) => {
-
-    e.preventDefault();
-
-    const updatedProduct = {
-      productId,
-      name,
-      price,
-      image,
-      brand,
-      category,
-      countInStock,
-      description,
-    };
-
-    const result = await updateProduct(updatedProduct);
-
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      toast.success('Product updated');
-      navigate('/admin/productlist');
-    }
-
-  };
 
   const uploadFileHandler = async (e) => {
     const formData = new FormData();
@@ -95,7 +93,7 @@ const ProductEditScreen = () => {
         {isLoading ? (
           <Loader />
         ) : error ? (
-          <Message variant='danger'>{error}</Message>
+          <Message variant='danger'>{error.data.message}</Message>
         ) : (
           <Form onSubmit={submitHandler}>
             <Form.Group controlId='name'>

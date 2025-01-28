@@ -1,40 +1,34 @@
-/**
- * Cart Price Calculations:
- * This module contains utility functions for calculating prices related to items in the cart,
- * including the total price, shipping, tax, and individual item prices. It also saves the cart state
- * to local storage.
- * 
- * Key Features:
- * - `addDecimals` rounds numbers to two decimal places and formats them as strings.
- * - `updateCart` calculates and updates various price values in the cart, such as items price, shipping,
- *   tax, and total price. The updated cart is then saved to localStorage.
- */
-
 export const addDecimals = (num) => {
-  // Round the number to two decimal places and format it as a string
   return (Math.round(num * 100) / 100).toFixed(2);
 };
 
+// NOTE: the code below has been changed from the course code to fix an issue
+// with type coercion of strings to numbers.
+// Our addDecimals function expects a number and returns a string, so it is not
+// correct to call it passing a string as the argument.
+
 export const updateCart = (state) => {
-  // Calculate the total price of all items in the cart
-  state.itemsPrice = addDecimals(
-    state.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0)
+  // Calculate the items price in whole number (pennies) to avoid issues with
+  // floating point number calculations
+  const itemsPrice = state.cartItems.reduce(
+    (acc, item) => acc + (item.price * 100 * item.qty) / 100,
+    0
   );
+  state.itemsPrice = addDecimals(itemsPrice);
 
-  // Calculate the shipping price (free shipping if items price is above 100)
-  state.shippingPrice = addDecimals(state.itemsPrice > 100 ? 0 : 10);
+  // Calculate the shipping price
+  const shippingPrice = itemsPrice > 100 ? 0 : 10;
+  state.shippingPrice = addDecimals(shippingPrice);
 
-  // Calculate the tax price (15% tax rate)
-  state.taxPrice = addDecimals(Number((0.15 * state.itemsPrice).toFixed(2)));
+  // Calculate the tax price
+  const taxPrice = 0.15 * itemsPrice;
+  state.taxPrice = addDecimals(taxPrice);
 
-  // Calculate the total price by adding items, shipping, and tax
-  state.totalPrice = (
-    Number(state.itemsPrice) +
-    Number(state.shippingPrice) +
-    Number(state.taxPrice)
-  ).toFixed(2);
+  const totalPrice = itemsPrice + shippingPrice + taxPrice;
+  // Calculate the total price
+  state.totalPrice = addDecimals(totalPrice);
 
-  // Save the updated cart state to localStorage for persistence
+  // Save the cart to localStorage
   localStorage.setItem('cart', JSON.stringify(state));
 
   return state;

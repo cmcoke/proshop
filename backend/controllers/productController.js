@@ -1,22 +1,11 @@
-/**
- * Controller functions for handling product-related routes in the application.
- * 
- * Features:
- * - `getProducts`: Fetches and returns a list of all products from the database.
- * - `getProductById`: Fetches and returns a single product based on its ID.
- * 
- * These functions are wrapped with `asyncHandler` to handle errors in asynchronous code and ensure clean error management.
- */
-
-import asyncHandler from '../middleware/asyncHandler.js'; // Middleware to handle errors in async functions.
-import Product from '../models/productModel.js'; // Mongoose model for the Product collection.
+import asyncHandler from '../middleware/asyncHandler.js';
+import Product from '../models/productModel.js';
 
 // @desc    Fetch all products
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-
-  const pageSize = 8;
+  const pageSize = process.env.PAGINATION_LIMIT;
   const page = Number(req.query.pageNumber) || 1;
 
   const keyword = req.query.keyword
@@ -34,27 +23,24 @@ const getProducts = asyncHandler(async (req, res) => {
     .skip(pageSize * (page - 1));
 
   res.json({ products, page, pages: Math.ceil(count / pageSize) });
-
 });
 
 // @desc    Fetch single product
 // @route   GET /api/products/:id
 // @access  Public
 const getProductById = asyncHandler(async (req, res) => {
+  // NOTE: checking for valid ObjectId to prevent CastError moved to separate
+  // middleware. See README for more info.
 
-  // Query the database to fetch a single product by its ID (from the request parameters).
   const product = await Product.findById(req.params.id);
-
-  // If the product exists, send it as a JSON response.
   if (product) {
     return res.json(product);
+  } else {
+    // NOTE: this will run if a valid ObjectId but no product was found
+    // i.e. product may be null
+    res.status(404);
+    throw new Error('Product not found');
   }
-
-  // If the product does not exist, set the status to 404 (Not Found).
-  res.status(404);
-
-  // Throw an error, which will be caught by the error-handling middleware.
-  throw new Error('Resource not found');
 });
 
 // @desc    Create a product
@@ -81,8 +67,8 @@ const createProduct = asyncHandler(async (req, res) => {
 // @route   PUT /api/products/:id
 // @access  Private/Admin
 const updateProduct = asyncHandler(async (req, res) => {
-
-  const { name, price, description, image, brand, category, countInStock } = req.body;
+  const { name, price, description, image, brand, category, countInStock } =
+    req.body;
 
   const product = await Product.findById(req.params.id);
 
@@ -107,25 +93,21 @@ const updateProduct = asyncHandler(async (req, res) => {
 // @route   DELETE /api/products/:id
 // @access  Private/Admin
 const deleteProduct = asyncHandler(async (req, res) => {
-
   const product = await Product.findById(req.params.id);
 
   if (product) {
     await Product.deleteOne({ _id: product._id });
-    res.status(200).json({ message: 'Product deleted' });
+    res.json({ message: 'Product removed' });
   } else {
     res.status(404);
     throw new Error('Product not found');
   }
-
 });
-
 
 // @desc    Create new review
 // @route   POST /api/products/:id/reviews
 // @access  Private
 const createProductReview = asyncHandler(async (req, res) => {
-
   const { rating, comment } = req.body;
 
   const product = await Product.findById(req.params.id);
@@ -168,10 +150,10 @@ const createProductReview = asyncHandler(async (req, res) => {
 // @access  Public
 const getTopProducts = asyncHandler(async (req, res) => {
   const products = await Product.find({}).sort({ rating: -1 }).limit(3);
-  res.status(200).json(products);
+
+  res.json(products);
 });
 
-// Export the controller functions for use in route definitions.
 export {
   getProducts,
   getProductById,

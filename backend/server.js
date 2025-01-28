@@ -1,43 +1,48 @@
-/**
- * This is the main entry point for the Express.js application.
- * It sets up the server, connects to the database, and defines routes for the API.
- * 
- * Features:
- * - Loads environment variables using `dotenv`.
- * - Connects to the MongoDB database.
- * - Defines a root route and a route for handling product-related requests.
- * - Starts the server on a specified port.
- */
-
 import path from 'path';
-import express from 'express'; // Import Express.js to create the server.
-import dotenv from 'dotenv'; // Import dotenv to manage environment variables.
+import { fileURLToPath } from 'url';
+import express from 'express';
+import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-dotenv.config(); // Load environment variables from a `.env` file.
-import connectDB from './config/db.js'; // Import the database connection utility.
-import { notFound, errorHandler } from './middleware/errorMiddleware.js'; // Import error handling middleware.
-import productRoutes from './routes/productRoutes.js'; // Import product-related routes.
-import userRoutes from './routes/userRoutes.js'; // Import user-related routes. 
-import orderRoutes from './routes/orderRoutes.js'; // Import order-related routes. 
+
+dotenv.config();
+
+import connectDB from './config/db.js';
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import productRoutes from './routes/productRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 
+// Get the correct `__dirname` equivalent in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const port = process.env.PORT || 5000; // Define the port for the server, defaulting to 5000 if not set in the `.env` file.
+const port = process.env.PORT || 5000;
 
-connectDB(); // Connect to the MongoDB database.
+connectDB();
 
-const app = express(); // Initialize the Express application.
+const app = express();
 
-app.use(express.json()); // Enable parsing of JSON bodies sent in requests. 
-app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded bodies sent in requests. 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
-app.use(cookieParser()); // Enable parsing of cookies sent in requests. 
+// Define API routes first before serving the frontend
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/upload', uploadRoutes);
+app.get('/api/config/paypal', (req, res) =>
+  res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
+);
 
+// Serve frontend **only after** defining API routes
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '/frontend/dist')));
+  const frontendPath = path.join(__dirname, '../frontend/dist');
+  app.use(express.static(frontendPath));
 
   app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'dist', 'index.html'))
+    res.sendFile(path.resolve(frontendPath, 'index.html'))
   );
 } else {
   app.get('/', (req, res) => {
@@ -45,28 +50,9 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Route for handling product-related requests.
-// Any requests to `/api/products` are forwarded to the `productRoutes` router.
-app.use('/api/products', productRoutes);
+app.use(notFound);
+app.use(errorHandler);
 
-// Route for handling user-related requests. 
-app.use('/api/users', userRoutes);
-
-// Route for handling order-related requests.
-app.use('/api/orders', orderRoutes);
-
-
-// Route for handling PayPal client ID requests. 
-app.get('/api/config/paypal', (req, res) =>
-  res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
-);
-
-
-
-app.use(notFound); // Middleware to handle requests to non-existent routes. Responds with a 404 status code.
-app.use(errorHandler); // Middleware to handle errors in the application. Responds with a 500 status code.
-
-// Start the server and listen on the defined port.
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`); // Log a confirmation message.
+  console.log(`Server is running on port ${port}`);
 });

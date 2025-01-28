@@ -1,16 +1,5 @@
-/**
- * Product Routes:
- * This module defines the routes for handling product-related requests in the API.
- * 
- * - `GET /api/products`: Fetch all products.
- * - `GET /api/products/:id`: Fetch a single product by its ID.
- * 
- * The routes use controller functions (`getProducts` and `getProductById`) for handling requests.
- */
-
-import express from 'express'; // Importing Express for route handling.
-const router = express.Router(); // Creating an Express router instance.
-
+import express from 'express';
+const router = express.Router();
 import {
   getProducts,
   getProductById,
@@ -18,23 +7,18 @@ import {
   updateProduct,
   deleteProduct,
   createProductReview,
-  getTopProducts
-} from '../controllers/productController.js'; // Importing controller functions for products.
+  getTopProducts,
+} from '../controllers/productController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
+import checkObjectId from '../middleware/checkObjectId.js';
 
-// Route to handle fetching all products.
 router.route('/').get(getProducts).post(protect, admin, createProduct);
-
+router.route('/:id/reviews').post(protect, checkObjectId, createProductReview);
 router.get('/top', getTopProducts);
-
-// Route to handle fetching a single product by its ID.
 router
   .route('/:id')
-  .get(getProductById)
-  .put(protect, admin, updateProduct)
-  .delete(protect, admin, deleteProduct);
+  .get(checkObjectId, getProductById)
+  .put(protect, admin, checkObjectId, updateProduct)
+  .delete(protect, admin, checkObjectId, deleteProduct);
 
-router.route('/:id/reviews').post(protect, createProductReview);
-
-// Export the router to use in the main application.
 export default router;
